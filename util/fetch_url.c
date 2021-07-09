@@ -3,15 +3,17 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <string.h>
-
+//#include "../db/include/db_connection.h"
+#include "../include/fetch_url.h"
 #define MAX_COLS 1
 #define MAX_COL_NAME_LEN 256
 #define MAX_USERNAME_LEN 256
 
-void get_url(int argc, char* argv[])
+
+
+//requires input username
+void get_url(db_connection_t *dbc, char* query, char* username, char* homepage)
 {
-	SQLHENV env;
-	SQLHDBC dbc;
 	SQLHSTMT stmt;
 	SQLSMALLINT columns;
 	SQLRETURN retcode;
@@ -26,88 +28,36 @@ void get_url(int argc, char* argv[])
 	SQLLEN 		column_data_len[MAX_COLS];
 	SQLSMALLINT rows_count, cols_count;
 
-	SQLCHAR query[MAX_COL_NAME_LEN];
+	SQLCHAR sql_query[MAX_SQL_QUERY_STR_LEN];
 	SQLSMALLINT num_cols;
-	char username[MAX_USERNAME_LEN];
-	if(argc < 2){
-		printf("\nToo few arguments passed");
-		return ;
-	}
+	
+	retcode = SQLAllocHandle(SQL_HANDLE_STMT, dbc->con_handle, &stmt);
+	//char *homepage;
 
-	strncpy(username, argv[1], MAX_USERNAME_LEN);
-
-	retcode = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env);
+//	sprintf(query, "select homepage from user_homepage_map where username = '%s';", username);
+	sprintf(sql_query, query, username);
+	//printf("\nQUERY :%s",  sql_query);
+	retcode = SQLPrepare(stmt, sql_query, strlen(sql_query));
 	if((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)){
-		printf("\nERROR:Failed to allocate Environment Handle");
-		return ;
-	}
-
-	retcode = SQLSetEnvAttr(env, SQL_ATTR_ODBC_VERSION, (void*) SQL_OV_ODBC3, 0);
-
-	retcode = SQLAllocHandle(SQL_HANDLE_DBC, env, &dbc);
-	if((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)){
-		printf("\nERROR:Failed to allocate Connection Handle");
-		SQLFreeHandle(SQL_HANDLE_ENV, env);
-		return ;
-	}
-
-	retcode = SQLDriverConnect(dbc, NULL, "DSN=Assign", SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
-	if((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)){
-		printf("\nERROR:Failed to connect to DSN");
-		if(dbc != 0){
-			SQLFreeHandle(SQL_HANDLE_DBC, dbc);
-		}	
-		if(env != 0){
-			SQLFreeHandle(SQL_HANDLE_ENV, env);
-		}	
-		return ;
-	}
-
-	retcode = SQLAllocHandle(SQL_HANDLE_STMT, dbc, &stmt);
-	if((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)){
-		printf("\nERROR:Failed to allocate Statement Handle");
+		printf("\nERROR:Preparing Statement");
 		
-	 	 if(dbc != 0){
-			SQLDisconnect(dbc);
-             SQLFreeHandle(SQL_HANDLE_DBC, dbc);
+	 	 if(stmt != 0){
+             SQLFreeHandle(SQL_HANDLE_STMT, stmt);
          }
-         if(env != 0){
-             SQLFreeHandle(SQL_HANDLE_ENV, env);
-         }   
-		return ;
-	}
-
-	sprintf(query, "select homepage from user_homepage_map where username = '%s';", username);
-	//printf("\n query %s\n", query);
-	
-
-	retcode = SQLPrepare(stmt, query, strlen(query));
-	if((retcode != SQL_SUCCESS) && (retcode != SQL_SUCCESS_WITH_INFO)){
-		printf("\nERROR:Failed to prepare");
-		if(dbc != 0){
-			SQLDisconnect(dbc);
-			SQLFreeHandle(SQL_HANDLE_DBC, dbc);
-		}
-		if(env != 0){
-			SQLFreeHandle(SQL_HANDLE_ENV, env);
-		}
-		return ;
+		 return ;
 	}
 	
-	retcode = SQLNumResultCols(stmt, &num_col);
+	retcode = SQLNumResultCols(stmt, &num_cols);
+//	printf("\nNo of cols : %d", num_cols);
 	if(num_cols  == 0){
 		printf("\nUsername not found in the Database");
-		if(dbc != 0){
-			SQLDisconnect(dbc);
-			SQLFreeHandle(SQL_HANDLE_DBC, dbc);
-		}
-		if(env != 0){
-			SQLFreeHandle(SQL_HANDLE_ENV, env);
-		}
+		if(stmt != 0)
+			SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 		return ;
+	
 	}	
-	printf("\nNumber of columns in result:%i", num_cols);
-
+	//printf("\nNumber of columns in result:%i", num_cols);
+	int i = 0;
 	for(int i=0;i<num_cols;i++){
 		column_name[i] = (SQLCHAR *) malloc (MAX_COL_NAME_LEN);
 		retcode = SQLDescribeCol(
@@ -144,7 +94,7 @@ void get_url(int argc, char* argv[])
 	//printf("\n Records \n");
 	retcode = SQLExecute(stmt);
 	
-	for( rows_count = 0 ; ; rows_count++){
+	for( rows_count = 0 ;rows_count < 1 ; rows_count++){
 		retcode = SQLFetch(stmt);
 		if(retcode == SQL_NO_DATA)
 			break;
@@ -153,28 +103,57 @@ void get_url(int argc, char* argv[])
 		for(cols_count = 0  ; cols_count < num_cols ; cols_count++){
 			//printf("Column %s:", column_name[cols_count]);
 			//considering data type is varchar
-			printf("For Username:%s \nHomepage is:%s\n", username, column_data[cols_count]);
+			printf("\nFor Username:%s \nHomepage is:%s\n", username, column_data[cols_count]);
+			strncpy(homepage, column_data[cols_count], MAX_HOMEPAGE_LEN);
+			//homepage = column_data[cols_count];
 		}
 	}
 
 	//Free all the handles allocated
+	for(int i=0;i<num_cols;i++)
+	{
+		free(column_data[i]);
+		free(column_name[i]);
+	}
+	
 	if(stmt != SQL_NULL_HSTMT)
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-	
+	/*
 	if(dbc != SQL_NULL_HDBC){
 		SQLDisconnect(dbc);
 		SQLFreeHandle(SQL_HANDLE_DBC, dbc);
 	}
 
 	if(env != SQL_NULL_HENV)
-		SQLFreeHandle(SQL_HANDLE_ENV, env);
+		SQLFreeHandle(SQL_HANDLE_ENV, env);*/
 	return ;
 }
 
 
+char* get_url_util(db_env_t *env, char* username, char* homepage)
+{
+	SQLRETURN ret_val = SQL_SUCCESS;
+	db_connection_t dbc;
+	ret_val = get_connection(env, &dbc, "Assign", NULL, NULL);
+	if(ret_val != SQL_SUCCESS){
+		printf("\nERROR: DB Connection Failed");
+		return NULL;
+	}
+	char query[] = "select homepage from user_homepage_map where username = '%s';";
+	
+	get_url(&dbc, query, username,homepage);
+	release_connection(&dbc);
+	if(homepage == NULL){
+		printf("\nERRORR: Could not get URL");
+		return NULL;
+	}
+	return homepage;
+}
+
+/*
 int main(int argc, char* argv[])
 {
 	//printf("\nSTART");
 	get_url(argc, argv);
 	return 0;
-}
+}*/
