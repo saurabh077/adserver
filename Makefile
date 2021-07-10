@@ -4,15 +4,16 @@ INC=include
 DB=db
 SRC=src
 UTIL=util
-CFLAGS= -lodbc
+CFLAGS= -lodbc -lfcgi 
 
 OBJS = \
 	$(OBJ)/db_connection.o \
 	$(OBJ)/fetch_url.o \
-	$(OBJ)/main.o 
+	$(OBJ)/main.o \
+	$(OBJ)/parse_query.o
 
 BINS = \
-	$(BIN)/main
+	$(BIN)/main.cgi
 
 all: make_dirs $(OBJS) $(BINS)
 
@@ -23,8 +24,8 @@ make_dirs:
 	@echo "----------------------------"
 	mkdir -p $(OBJ) $(BIN)
 
-$(BIN)/main: $(SRC)/main.c $(OBJ)/db_connection.o $(OBJ)/fetch_url.o
-	gcc $^ $(CFLAGS) -o $@
+$(BIN)/main.cgi: $(SRC)/main.c $(OBJ)/db_connection.o $(OBJ)/fetch_url.o $(OBJ)/parse_query.o
+	gcc -lfcgi $^ $(CFLAGS) -o $@
 
 $(OBJ)/db_connection.o: $(DB)/db_connection.c
 	gcc -c $(CFLAGS) $^ -o $@ 
@@ -34,6 +35,9 @@ $(OBJ)/fetch_url.o: $(UTIL)/fetch_url.c
 
 $(OBJ)/main.o: $(SRC)/main.c
 	gcc -c $(CFLAGS) $^ -o $@
+
+$(OBJ)/parse_query.o: $(UTIL)/parse_query.c
+	gcc -c -lfcgi $< -o $@
 
 clean:
 	@echo "----------------------------------------------------------------------------------"
