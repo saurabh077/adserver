@@ -1,3 +1,6 @@
+#ifndef __DB_HOMEPAGE_H__
+#define __DB_HOMEPAGE_H__
+
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
@@ -23,3 +26,5 @@ void release_connection(db_connection_t *dbc);
 void release_db_env(db_env_t *env);
 
 //int get_url(db_connection_t *dbc, char* query, char* username);
+
+#endif

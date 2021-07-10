@@ -9,10 +9,10 @@ CFLAGS= -lodbc
 OBJS = \
 	$(OBJ)/db_connection.o \
 	$(OBJ)/fetch_url.o \
-	$(OBJ)/code.o 
+	$(OBJ)/main.o 
 
 BINS = \
-	$(BIN)/code
+	$(BIN)/main
 
 all: make_dirs $(OBJS) $(BINS)
 
@@ -23,7 +23,7 @@ make_dirs:
 	@echo "----------------------------"
 	mkdir -p $(OBJ) $(BIN)
 
-$(BIN)/code: $(SRC)/code.c $(OBJ)/db_connection.o $(OBJ)/fetch_url.o
+$(BIN)/main: $(SRC)/main.c $(OBJ)/db_connection.o $(OBJ)/fetch_url.o
 	gcc $^ $(CFLAGS) -o $@
 
 $(OBJ)/db_connection.o: $(DB)/db_connection.c
@@ -32,7 +32,7 @@ $(OBJ)/db_connection.o: $(DB)/db_connection.c
 $(OBJ)/fetch_url.o: $(UTIL)/fetch_url.c
 	gcc -c $(CFLAGS) $^ -o $@
 
-$(OBJ)/code.o: $(SRC)/code.c
+$(OBJ)/main.o: $(SRC)/main.c
 	gcc -c $(CFLAGS) $^ -o $@
 
 clean:
