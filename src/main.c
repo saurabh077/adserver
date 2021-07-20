@@ -51,11 +51,11 @@ int main()
 		//printf("\nURL:%s\n", homepage);
 		release_db_env(&env);
 		//	free(homepage);
-		printf("Content-type: text/html\r\n"
-			"\r\n"
-			""
-			"FastCGI Hello From Saurabh AdServer!"
-			"Your homepage is:%s", homepage);
+		printf("HTTP/1.1 301 Moved Permanently\r\n"
+		"Location: %s \r\n"
+		"Content-Type:text/html;charset=us-ascii\r\n"
+		"Set-Cookie: homepage=%s\r\n"
+			"\r\n", homepage, homepage, homepage);
 	}
 		return 0;
 }
