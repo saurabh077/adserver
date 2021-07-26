@@ -1,4 +1,5 @@
 #include <fcgi_stdio.h>
+//#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -37,22 +38,34 @@ int main()
 		return 0;
 	}
 	while(FCGI_Accept() >= 0){
-		char* query_string = getenv("QUERY_STRING");
-		char* username = parse_query_string(query_string);
-	
+		char* cookie_string = getenv("HTTP_COOKIE");
+	//	char* username;
+		fprintf(stderr, "%s\n", cookie_string);
+		/*if(cookie_string != NULL){
+			fprintf(stderr, "HTTP-COOKIE : %s\n", cookie_string);
+			username = strtok(cookie_string, "=");
+			username = strtok(NULL, "=");
+			fprintf(stderr, "Reading username from the cookie:%s\n", username);
+		}else{
+			char* query_string = getenv("QUERY_STRING");
+			username = parse_query_string(query_string);	
+		}
 		char homepage[MAX_HOMEPAGE_LEN];
 		get_url_util(&env, username, homepage);
-		
 		if(homepage == NULL){
 			fprintf(stderr, "ERROR:/INFO: Homepage not found for given Username : %s\n", username);
 			return 0;
-		}
-	
-		printf("HTTP/1.1 301 Moved Permanently\r\n"
+		}*/
+		char* query_string = getenv("QUERY_STRING");
+		printf("Content-Type:text/html;charset=us-ascii\r\n"
+			"Coo: %s\r\n"
+			"\r\n"
+			, query_string);
+		/*printf("HTTP/1.1 301 Moved Permanently\r\n"
 		"Location: %s \r\n"
 		"Content-Type:text/html;charset=us-ascii\r\n"
 		"Set-Cookie: UID=%s; Max-age=86400\r\n"
-			"\r\n", homepage, username);
+			"\r\n", homepage, username);*/
 	}
 	close(tmp_fd);
 	release_db_env(&env);
