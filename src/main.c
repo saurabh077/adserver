@@ -3,14 +3,15 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "../include/fetch_url.h"
-#include "../include/parse_query.h"
+#include "fetch_url.h"
+#include "parse_query.h"
 
 #define MAX_LENGTH_USERNAME 256
 #define MAX_LENGTH_URL 128 
 
 int main()
 {
+	
 	db_env_t env;
 	int log_fd = -1;
 	char log_file[128];
@@ -38,9 +39,6 @@ int main()
 	while(FCGI_Accept() >= 0){
 		char* query_string = getenv("QUERY_STRING");
 		char* username = parse_query_string(query_string);
-	
-		long long int random_number;
-		char url[MAX_LENGTH_URL + 1];
 	
 		char homepage[MAX_HOMEPAGE_LEN];
 		get_url_util(&env, username, homepage);

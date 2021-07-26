@@ -1,10 +1,15 @@
+BASE_DIR=..
+BASE=.
 BIN=bin
 OBJ=obj
 INC=include
 DB=db
 SRC=src
 UTIL=util
-CFLAGS= -lodbc -lfcgi 
+CFLAGS= -lodbc -lfcgi -Wall -Werror -Wextra 
+
+INCLUDES= -I$(DB)/include \
+		 -Iinclude 
 
 OBJS = \
 	$(OBJ)/db_connection.o \
@@ -24,20 +29,20 @@ make_dirs:
 	@echo "----------------------------"
 	mkdir -p $(OBJ) $(BIN)
 
-$(BIN)/main.cgi: $(SRC)/main.c $(OBJ)/db_connection.o $(OBJ)/fetch_url.o $(OBJ)/parse_query.o
-	gcc -lfcgi $^ $(CFLAGS) -o $@
+$(BIN)/main.cgi: $(SRC)/main.c  $(OBJ)/db_connection.o $(OBJ)/fetch_url.o $(OBJ)/parse_query.o
+	gcc -lfcgi $^ $(CFLAGS) $(INCLUDES) -o $@
 
 $(OBJ)/db_connection.o: $(DB)/db_connection.c
-	gcc -c $(CFLAGS) $^ -o $@ 
+	gcc -c $(CFLAGS) $(INCLUDES) $^ -o $@ 
 
 $(OBJ)/fetch_url.o: $(UTIL)/fetch_url.c
-	gcc -c $(CFLAGS) $^ -o $@
+	gcc -c $(CFLAGS) $(INCLUDES) $^ -o $@
 
 $(OBJ)/main.o: $(SRC)/main.c
-	gcc -c $(CFLAGS) $^ -o $@
+	gcc -c $(CFLAGS) $(INCLUDES) $^ -o $@
 
 $(OBJ)/parse_query.o: $(UTIL)/parse_query.c
-	gcc -c -lfcgi $< -o $@
+	gcc -c -lfcgi $(INCLUDES) $< -o $@
 
 clean:
 	@echo "----------------------------------------------------------------------------------"

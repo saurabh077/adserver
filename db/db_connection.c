@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "include/db_connection.h"
+#include "db_connection.h"
 #define MAX_DSN_STRING_LEN 256
 
 int initialize_db_env(db_env_t *env)
@@ -14,7 +14,7 @@ int initialize_db_env(db_env_t *env)
 	return DB_SUCCESS;
 }
 	
-int get_connection(db_env_t *env, db_connection_t *dbc, char* dsnname, char* username, char* password)
+int get_connection(db_env_t *env, db_connection_t *dbc, char* dsnname)
 {
 	SQLRETURN retval = SQL_SUCCESS;
 	SQLAllocHandle(SQL_HANDLE_DBC, env->env_handle, &(dbc->con_handle));
@@ -27,7 +27,7 @@ int get_connection(db_env_t *env, db_connection_t *dbc, char* dsnname, char* use
 	sprintf(dsn_string, "DSN=%s", dsnname);
 	//printf("  %s  ", dsn_string);
 	
-	retval = SQLDriverConnect(dbc->con_handle, NULL, dsn_string, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
+	retval = SQLDriverConnect(dbc->con_handle, NULL, (SQLCHAR *)dsn_string, SQL_NTS, NULL, 0, NULL, SQL_DRIVER_COMPLETE);
 	if((dbc->con_handle) != 0 && (retval == SQL_SUCCESS)){
 		return DB_SUCCESS;
 	}

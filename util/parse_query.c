@@ -2,12 +2,10 @@
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
-#include "../include/parse_query.h"
+#include "parse_query.h"
 
 char* parse_query_string(char* str)
 {
-	//char str[] = "username=Anil&ran=0.97584378943&pageURL=http://xyz.com";
-//	int init_size = strlen(str);
 	char delim[] = "&";
 
 	char *ptr = strtok(str, delim);

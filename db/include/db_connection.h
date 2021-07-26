@@ -19,7 +19,7 @@ typedef struct db_connection{
 
 int initialize_db_env(db_env_t *env);
 
-int get_connection(db_env_t *env, db_connection_t *dbc, char* dsnname, char* username, char* password);
+int get_connection(db_env_t *env, db_connection_t *dbc, char* dsnname);
 
 void release_connection(db_connection_t *dbc);
 
