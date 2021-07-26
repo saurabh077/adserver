@@ -56,6 +56,7 @@ int main()
 		"Set-Cookie: UID=%s; Max-age=86400\r\n"
 			"\r\n", homepage, username);
 	}
+	close(tmp_fd);
 	release_db_env(&env);
 		return 0;
 }
