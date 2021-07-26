@@ -54,8 +54,8 @@ int main()
 		printf("HTTP/1.1 301 Moved Permanently\r\n"
 		"Location: %s \r\n"
 		"Content-Type:text/html;charset=us-ascii\r\n"
-		"Set-Cookie: homepage=%s\r\n"
-			"\r\n", homepage, homepage, homepage);
+		"Set-Cookie: UID=%s; Max-age=86400\r\n"
+			"\r\n", homepage, username);
 	}
 		return 0;
 }
